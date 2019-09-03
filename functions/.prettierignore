@@ -1,0 +1,13 @@
+#
+dist/
+
+# external modules
+node_modules/
+.vscode/
+
+# fix by yarn automatically
+package.json
+yarn.lock
+
+#
+tsconfig.json

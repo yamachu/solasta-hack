@@ -9,3 +9,4 @@ node_modules/
 
 #
 !webpack.config.js
+!.prettierrc.js
