@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as functions from 'firebase-functions';
+import fetch, { Headers } from 'node-fetch';
 import { Actions, Command, CommandType, SlackRequestMessage, TriggerWord } from './contract';
 
 const parseActions = (command: CommandType, args: string[]): Actions => {
@@ -40,24 +41,36 @@ const parseActions = (command: CommandType, args: string[]): Actions => {
     }
 };
 
-const sendHelpMessage = (res: Response) => {
-    res.status(200).send({
-        text: `usage:
-      - ${TriggerWord} ${Command.Add} [name] [count] [date]
-        - name => 担当者名（MyPlaceに登録してある名前、スペースを除いて）
-        - count => 招待人数
-        - date => ex:) 2019-10-08
-      - ${TriggerWord} ${Command.Help}
-      - ${TriggerWord} ${Command.Usage}
-    `,
-        response_type: 'ephemeral',
+const helpMessage = `usage:
+- ${TriggerWord} ${Command.Add} [name] [count] [date]
+  - name => 担当者名（MyPlaceに登録してある名前、スペースを除いて）
+  - count => 招待人数
+  - date => ex:) 2019-10-08
+- ${TriggerWord} ${Command.Help}
+- ${TriggerWord} ${Command.Usage}
+`;
+
+const sendSlackOnlyVisibleYouMessage = (slackPayload: SlackRequestMessage, text: string) => {
+    const body = JSON.stringify({
+        channel: slackPayload.channel_id,
+        text,
+        user: slackPayload.user_id,
+    });
+
+    return fetch('https://slack.com/api/chat.postEphemeral', {
+        method: 'POST',
+        body,
+        headers: new Headers([
+            ['Authorization', `Bearer ${functions.config().solainv.slack.oauth_token}`],
+            ['content-type', 'application/json'],
+        ]),
     });
 };
 
 export const handler = functions
     .runWith({
         timeoutSeconds: 180,
-        memory: '512MB',
+        memory: '1GB',
     })
     .region('asia-northeast1')
     .https.onRequest(async (req: Request, res: Response) => {
@@ -68,7 +81,7 @@ export const handler = functions
 
         const separated = reqBody.text.split(/\s+/);
         if (separated.length < 2) {
-            sendHelpMessage(res);
+            sendSlackOnlyVisibleYouMessage(reqBody, helpMessage);
             return;
         }
         separated.shift(); // this is must be solainv
@@ -79,14 +92,19 @@ export const handler = functions
 
         switch (actions.action) {
             case Command.Add:
-                res.send({ response_type: 'ephemeral' });
+                // 200返すとpuppeteer落ちるな−
+                // res.status(200).send();
                 const command = require('./commands/add')['default'];
                 await command(actions);
-                res.send({ response_type: 'ephemeral', text: 'たぶん送れた' });
+                await sendSlackOnlyVisibleYouMessage(
+                    reqBody,
+                    `${actions.host}のお客様を招待者として入館証のQRを発行しました。メールをご確認ください。`
+                );
                 return;
             case Command.Help:
             case Command.Usage:
-                sendHelpMessage(res);
+                res.status(200).send();
+                await sendSlackOnlyVisibleYouMessage(reqBody, helpMessage);
                 return;
         }
     });
