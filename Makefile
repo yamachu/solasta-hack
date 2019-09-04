@@ -3,5 +3,5 @@
 build:
 	$(MAKE) -C functions production
 
-deploy: build
+deploy:
 	npx firebase deploy --only functions
