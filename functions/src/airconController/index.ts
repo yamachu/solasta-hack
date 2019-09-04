@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import admin from 'firebase-admin';
-import { https } from 'firebase-functions';
+import * as functions from 'firebase-functions';
 import api from './client';
 import { Floor } from './contract';
 
@@ -113,7 +113,9 @@ const sendHelpMessage = (res: Response) => {
     `);
 };
 
-const myHttpHandler = https.onRequest(async (req: Request, res: Response) => {
+const myHttpHandler = functions
+    .region('asia-northeast1')
+    .https.onRequest(async (req: Request, res: Response) => {
     const reqBody: SlackRequestMessage = { ...req.body };
 
     const separated = reqBody.text.split(/\s+/);
