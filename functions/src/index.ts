@@ -6,7 +6,7 @@ admin.initializeApp();
 let _myHttpHandler;
 
 if (!process.env.FUNCTION_NAME || process.env.FUNCTION_NAME === 'myHttpHandler') {
-    _myHttpHandler = require('./airconController/index')['default'];
+    _myHttpHandler = require('./airconController/index')['handler'];
 }
 
 export const updateToken = updateMyPlaceToken;

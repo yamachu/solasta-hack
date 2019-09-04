@@ -113,60 +113,58 @@ const sendHelpMessage = (res: Response) => {
     `);
 };
 
-const myHttpHandler = functions
+export const handler = functions
     .region('asia-northeast1')
     .https.onRequest(async (req: Request, res: Response) => {
-    const reqBody: SlackRequestMessage = { ...req.body };
+        const reqBody: SlackRequestMessage = { ...req.body };
 
-    const separated = reqBody.text.split(/\s+/);
-    if (separated.length < 2) {
-        sendHelpMessage(res);
-        return;
-    }
-    separated.shift(); // this is must be aircon
-    const command: CommandType = separated.shift();
-    const args = separated;
-
-    const actions = parseActions(command, args);
-
-    const config = await admin
-        .firestore()
-        .doc('/admin/token')
-        .get();
-    const token = config.get('accessToken');
-
-    switch (actions.action) {
-        case Command.ShowTemp: {
-            api.setToken(token);
-            const status = await api.getFloorTemp(actions.floor);
-            const aircon = status.find((s) => s.id === actions.target.toString());
-            if (aircon === undefined) {
-                sendHelpMessage(res);
-                return;
-            }
-            res.send(
-                `id: ${aircon.id} => ${aircon.attributes.name}, 電源: ${aircon.attributes.is_power}, 設定: ${aircon.attributes.setting}℃, 室温: ${aircon.attributes.temperature}℃`
-            );
-            return;
-        }
-        case Command.List: {
-            api.setToken(token);
-            const status = await api.getFloorTemp(actions.floor);
-            res.send(
-                status
-                    .map(
-                        (v) =>
-                            `id: ${v.id} => ${v.attributes.name}, 電源: ${v.attributes.is_power}, 設定: ${v.attributes.setting}℃, 室温: ${v.attributes.temperature}℃`
-                    )
-                    .join('\n')
-            );
-            return;
-        }
-        case Command.Help:
-        case Command.Usage:
+        const separated = reqBody.text.split(/\s+/);
+        if (separated.length < 2) {
             sendHelpMessage(res);
             return;
-    }
-});
+        }
+        separated.shift(); // this is must be aircon
+        const command: CommandType = separated.shift();
+        const args = separated;
 
-export default myHttpHandler;
+        const actions = parseActions(command, args);
+
+        const config = await admin
+            .firestore()
+            .doc('/admin/token')
+            .get();
+        const token = config.get('accessToken');
+
+        switch (actions.action) {
+            case Command.ShowTemp: {
+                api.setToken(token);
+                const status = await api.getFloorTemp(actions.floor);
+                const aircon = status.find((s) => s.id === actions.target.toString());
+                if (aircon === undefined) {
+                    sendHelpMessage(res);
+                    return;
+                }
+                res.send(
+                    `id: ${aircon.id} => ${aircon.attributes.name}, 電源: ${aircon.attributes.is_power}, 設定: ${aircon.attributes.setting}℃, 室温: ${aircon.attributes.temperature}℃`
+                );
+                return;
+            }
+            case Command.List: {
+                api.setToken(token);
+                const status = await api.getFloorTemp(actions.floor);
+                res.send(
+                    status
+                        .map(
+                            (v) =>
+                                `id: ${v.id} => ${v.attributes.name}, 電源: ${v.attributes.is_power}, 設定: ${v.attributes.setting}℃, 室温: ${v.attributes.temperature}℃`
+                        )
+                        .join('\n')
+                );
+                return;
+            }
+            case Command.Help:
+            case Command.Usage:
+                sendHelpMessage(res);
+                return;
+        }
+    });
