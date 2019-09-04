@@ -4,7 +4,7 @@ const glob = require('glob');
 
 const output_path = 'dist';
 
-const functions = ['airconController'];
+const functions = ['airconController', 'invitationController'];
 
 const commonConfig = {
     resolve: {
