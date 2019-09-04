@@ -192,6 +192,7 @@ const addAction = async (action: Actions) => {
         return;
     }
     const browser = await getBrowser();
+    console.log('begin add');
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
 

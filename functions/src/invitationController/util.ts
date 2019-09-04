@@ -26,11 +26,14 @@ export const wait = (interval: number): Promise<void> =>
 
 export const getBrowser = async (): Promise<Browser> => {
     const isLocal = process.env.LOCAL_DEV !== undefined;
+    console.log(`isLocal: ${isLocal}`);
 
     const options = {
         headless: isLocal ? false : true,
         args: ['--lang=ja,en-US,en', '--no-sandbox'],
+        timeout: 10000,
     };
 
+    console.log('try launch');
     return await launch(options);
 };
