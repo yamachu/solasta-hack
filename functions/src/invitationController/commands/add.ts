@@ -88,15 +88,19 @@ const addGuests = (page: Page) => async ({
     count,
 }: {
     familyName: string;
-    firstName: string;
+    firstName?: string;
     email?: string;
     count?: number;
 }) => {
     console.info('Begin Add Guests');
     await page.$eval('#textBox_Person_FamilyName', (e) => (e.nodeValue = ''));
+    await page.waitFor(500);
     await page.type('#textBox_Person_FamilyName', familyName);
-    await page.$eval('#textBox_Person_FirstName', (e) => (e.nodeValue = ''));
-    await page.type('#textBox_Person_FirstName', firstName);
+    if (firstName !== undefined) {
+        await page.$eval('#textBox_Person_FirstName', (e) => (e.nodeValue = ''));
+        await page.waitFor(500);
+        await page.type('#textBox_Person_FirstName', firstName);
+    }
     if (email !== undefined) {
         await page.$eval('#textBox_MailAddress', (e) => (e.nodeValue = ''));
         await page.type('#textBox_MailAddress', email);
@@ -109,7 +113,7 @@ const addGuests = (page: Page) => async ({
         page.click('#imageButton_VisitorPerson_Enter'),
         waitFormUpdate(page)
             .then((_) => waitForReady(page))
-            .then(() => wait(300)),
+            .then(() => wait(1500)),
     ]);
     console.info('End Add Guests');
 };
@@ -210,8 +214,7 @@ const addAction = async (action: Actions) => {
 
     for (let i = 0; i < (action.count || 1); i++) {
         await addGuests(newPage)({
-            familyName: `${action.host}の`,
-            firstName: 'お客様',
+            familyName: `${action.host}のお客`,
         });
         await newPage.waitFor(500);
     }
