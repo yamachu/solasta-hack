@@ -223,7 +223,7 @@ const addAction = async (action: Actions) => {
 
     await submit(newPage)();
 
-    console.info('Closeing...');
+    console.info('Closing...');
     await browser.close();
     console.info('Closed');
 };
