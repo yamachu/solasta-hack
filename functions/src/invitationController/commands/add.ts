@@ -174,7 +174,7 @@ const selectDate = (page: Page) => async (date: Date) => {
     ]);
 
     await Promise.all([
-        page.select('#dropDownList_VisitorBookingTime_Hour', 'H09'),
+        page.select('#dropDownList_VisitorBookingTime_Hour', 'H07'),
         waitFormUpdate(page).then(() => wait(300)),
     ]);
 
