@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 import { Browser, Page } from 'puppeteer';
-import { Actions, Command, LinkToVisitView, LinkToVisitViewForm } from '../contract';
+import { Actions, Command, LinkToVisitView, LinkToVisitViewForm, TicketType } from '../contract';
 import { getBrowser, retryFunction, wait, waitFormUpdate, waitForReady } from '../util';
 
 if (process.env.LOCAL_DEV !== undefined) {
@@ -22,6 +22,9 @@ const openVisitSystem = (browser: Browser, page: Page) => async () => {
         browser.waitForTarget((t) => t.opener() === page.target()).then((t) => t.page()),
         page.click(LinkToVisitView),
     ]);
+    await newPage.waitForResponse((u) =>
+        u.url().includes('https://visitview.knowlbo.co.jp/solasta-tenant')
+    );
     return newPage;
 };
 
@@ -34,11 +37,21 @@ const moveToVisitSystemForm = (page: Page) => async () => {
     await retryFunction(
         () =>
             Promise.all([
-                page.click(LinkToVisitViewForm),
-                Promise.race([
-                    page.waitForNavigation({ waitUntil: 'networkidle0' }),
-                    new Promise((_, reject) => setTimeout(() => reject(), 5000)),
-                ]),
+                page
+                    .$(LinkToVisitView)
+                    .then((_) => page.click(LinkToVisitViewForm))
+                    .catch((_) => {
+                        console.log(`${LinkToVisitView} maybe not found, wait for navigation...`);
+                    }),
+                page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 2000 }).catch((e) => {
+                    if (
+                        page.url() ===
+                        'https://visitview.knowlbo.co.jp/solasta-tenant/officeview/OfficeView.WebPages/VisitorBooking/VisitorBookingDataPage.aspx'
+                    ) {
+                        return Promise.resolve();
+                    }
+                    throw e;
+                }),
             ]),
         3
     ).then((_) => waitForReady(page));
@@ -76,7 +89,7 @@ const selectReception = (page: Page) => async () => {
     );
     await Promise.all([
         page.select('#dropDownList_SelectionFacilityRoom', '#0001'), // 15F 受付
-        waitFormUpdate(page).then((_) => waitForReady(page)),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }).then((_) => waitForReady(page)),
     ]);
     console.info('End Select Reception');
 };
@@ -122,6 +135,7 @@ const selectDate = (page: Page) => async (date: Date) => {
     console.info('Begin Select Date');
 
     await page.click('#checkBox_IsVisitorBookingDate');
+    await waitForReady(page);
 
     const moveTargetMonth = async () => {
         while (true) {
