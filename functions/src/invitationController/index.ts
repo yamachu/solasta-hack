@@ -78,6 +78,11 @@ export const handler = functions
         if (reqBody.token !== functions.config().solainv.slack.outgoing_token) {
             throw new Error('Invalid token received');
         }
+        if (reqBody.channel_name === '_timeline') {
+            console.log('this action has sent by _timeline, ignore');
+            res.status(200).send();
+            return;
+        }
 
         const separated = reqBody.text.split(/\s+/);
         if (separated.length < 2) {
@@ -95,11 +100,19 @@ export const handler = functions
                 // 200返すとpuppeteer落ちるな−
                 // res.status(200).send();
                 const command = require('./commands/add')['default'];
+                try {
                 await command(actions);
                 await sendSlackOnlyVisibleYouMessage(
                     reqBody,
                     `${actions.host}のお客様を招待者として入館証のQRを発行しました。メールをご確認ください。`
                 );
+                } catch (e) {
+                    console.error(e);
+                    await sendSlackOnlyVisibleYouMessage(
+                        reqBody,
+                        `入館証のQR発行に失敗しました。リトライしてください。再度試してこのエラーが表示された場合は@yamachuにご連絡下さい。`
+                    );
+                }
                 return;
             case Command.Help:
             case Command.Usage:
