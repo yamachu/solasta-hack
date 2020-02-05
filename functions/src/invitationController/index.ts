@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 import * as functions from 'firebase-functions';
 import fetch, { Headers } from 'node-fetch';
-import { Actions, Command, CommandType, SlackRequestMessage, TriggerWord } from './contract';
+import {
+    Actions,
+    Command,
+    CommandType,
+    SlackRequestMessage,
+    TicketType,
+    TriggerWord,
+} from './contract';
 
 const parseActions = (command: CommandType, args: string[]): Actions => {
     switch (command) {
@@ -19,11 +26,13 @@ const parseActions = (command: CommandType, args: string[]): Actions => {
                     action: Command.Usage,
                 };
             }
+            const ticketType = args.length > 3 ? TicketType.OneDay : TicketType.Once;
             return {
                 action: Command.Add,
                 host,
                 count,
                 date,
+                ticketType,
             };
         }
         case Command.Help:
@@ -42,10 +51,11 @@ const parseActions = (command: CommandType, args: string[]): Actions => {
 };
 
 const helpMessage = `usage:
-- ${TriggerWord} ${Command.Add} [name] [count] [date]
+- ${TriggerWord} ${Command.Add} [name] [count] [date] <isOneDay>
   - name => 担当者名（MyPlaceに登録してある名前、スペースを除いて）
   - count => 招待人数
   - date => ex:) 2019-10-08
+  - isOneDay => 一日券にしたい場合何かしらの文字列を入れて下さい ex:) 1
 - ${TriggerWord} ${Command.Help}
 - ${TriggerWord} ${Command.Usage}
 `;
@@ -101,11 +111,11 @@ export const handler = functions
                 // res.status(200).send();
                 const command = require('./commands/add')['default'];
                 try {
-                await command(actions);
-                await sendSlackOnlyVisibleYouMessage(
-                    reqBody,
-                    `${actions.host}のお客様を招待者として入館証のQRを発行しました。メールをご確認ください。`
-                );
+                    await command(actions);
+                    await sendSlackOnlyVisibleYouMessage(
+                        reqBody,
+                        `${actions.host}のお客様を招待者として入館証のQRを発行しました。メールをご確認ください。`
+                    );
                 } catch (e) {
                     console.error(e);
                     await sendSlackOnlyVisibleYouMessage(

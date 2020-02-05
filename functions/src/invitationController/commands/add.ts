@@ -185,6 +185,26 @@ const selectDate = (page: Page) => async (date: Date) => {
     console.info('End Select Date');
 };
 
+const selectVisitorClass = (page: Page) => async (ticketType: TicketType) => {
+    console.info(`Begin Select Visitor Class: ${ticketType}`);
+    await waitForReady(page).then((_) =>
+        page.waitForSelector('#dropDownList_VisitorClass', {
+            visible: true,
+        })
+    );
+    const valueNameMap: [
+        string,
+        string
+    ][] = await page.$$eval('#dropDownList_VisitorClass > option', (e) =>
+        e.map((v) => [v.getAttribute('value') as string, v.innerHTML.replace(/\s/g, '').trim()])
+    );
+    await Promise.all([
+        page.select('#dropDownList_VisitorClass', valueNameMap[ticketType][0]),
+        page.waitForNavigation({ waitUntil: 'networkidle0' }),
+    ]);
+    console.info(`End Select Visitor Class: ${ticketType}`);
+};
+
 const submit = (page: Page) => async () => {
     console.info('Begin Submit');
     await Promise.all([page.click('#imageButton_OK0'), waitFormUpdate(page)]);
@@ -220,6 +240,7 @@ const addAction = async (action: Actions) => {
     }
 
     await selectDate(newPage)(action.date);
+    await selectVisitorClass(newPage)(action.ticketType);
 
     await submit(newPage)();
 

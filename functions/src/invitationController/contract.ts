@@ -22,6 +22,11 @@ export const enum Command {
     Help = 'help',
 }
 
+export const enum TicketType {
+    Once = 1,
+    OneDay = 2,
+}
+
 export type CommandType = Command | string | undefined;
 
 export type Actions =
@@ -30,6 +35,7 @@ export type Actions =
           host: string;
           count: number;
           date: Date;
+          ticketType: TicketType;
       }
     | {
           action: Command.Help;
