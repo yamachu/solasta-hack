@@ -219,6 +219,9 @@ const addAction = async (action: Actions) => {
     console.log('begin add');
     const page = await browser.newPage();
     await page.setViewport({ width: 1200, height: 800 });
+    await page.setExtraHTTPHeaders({
+        'Accept-Language': 'ja-JP',
+    });
 
     const config = await admin
         .firestore()
@@ -228,6 +231,9 @@ const addAction = async (action: Actions) => {
 
     await login(page)(token);
     const newPage = await openVisitSystem(browser, page)();
+    await newPage.setExtraHTTPHeaders({
+        'Accept-Language': 'ja-JP',
+    });
     await moveToVisitSystemForm(newPage)();
     await selectHost(newPage)(action.host);
     await selectReception(newPage)();

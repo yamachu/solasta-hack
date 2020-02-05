@@ -30,7 +30,7 @@ export const getBrowser = async (): Promise<Browser> => {
 
     const options = {
         headless: isLocal ? false : true,
-        args: ['--lang=ja,en-US,en', '--no-sandbox'],
+        args: ['--lang=ja', '--no-sandbox'],
         timeout: 10000,
     };
 
