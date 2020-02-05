@@ -4,20 +4,20 @@
   "main": "dist/index.js",
   "license": "MIT",
   "dependencies": {
-    "firebase-admin": "8.4.0",
-    "firebase-functions": "3.2.0",
+    "firebase-admin": "8.9.2",
+    "firebase-functions": "3.3.0",
     "node-fetch": "2.6.0",
-    "puppeteer": "1.19.0"
+    "puppeteer": "2.1.0"
   },
   "devDependencies": {
-    "@types/express": "4.17.1",
-    "@types/node-fetch": "2.5.0",
-    "@types/puppeteer": "1.19.1",
-    "glob": "7.1.4",
-    "ts-loader": "6.0.4",
-    "typescript": "3.6.2",
-    "webpack": "4.39.3",
-    "webpack-cli": "3.3.7",
+    "@types/express": "4.17.2",
+    "@types/node-fetch": "2.5.4",
+    "@types/puppeteer": "2.0.0",
+    "glob": "7.1.6",
+    "ts-loader": "6.2.1",
+    "typescript": "3.7.5",
+    "webpack": "4.41.5",
+    "webpack-cli": "3.3.10",
     "webpack-node-externals": "1.7.2"
   },
   "engines": {
