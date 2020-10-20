@@ -6,12 +6,12 @@
   "dependencies": {
     "firebase-admin": "8.9.2",
     "firebase-functions": "3.11.0",
-    "node-fetch": "2.6.0",
+    "node-fetch": "2.6.1",
     "puppeteer": "2.1.0"
   },
   "devDependencies": {
     "@types/express": "4.17.8",
-    "@types/node-fetch": "2.5.4",
+    "@types/node-fetch": "2.5.7",
     "@types/puppeteer": "2.0.0",
     "glob": "7.1.6",
     "ts-loader": "8.0.6",
